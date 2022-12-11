@@ -11,7 +11,8 @@ exports.createPages = async ({ actions, graphql }) => {
         edges {
           node {
             frontmatter {
-              path
+              language
+              slug
             }
           }
         }
@@ -30,11 +31,13 @@ exports.createPages = async ({ actions, graphql }) => {
   // console.log(JSON.stringify(posts, null, 2))
 
   posts.forEach(({ node }) => {
-    let path = node.frontmatter.path
+    let { language, slug } = node.frontmatter
+    language = language || 'en'
+    let path = language === 'en' ? `/blog/${slug}/` : `/${language}/blog/${slug}/`
     createPage({
       path,
       component: blogPostTemplate,
-      context: { }
+      context: { language, slug }
     })
   })
 

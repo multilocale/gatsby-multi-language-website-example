@@ -26,7 +26,18 @@ module.exports = {
       options: {
         languages: ['en', 'es'],
         defaultLanguage: 'en',
+        pages: [
+          {
+          matchPath: '/:lang?/blog/:uid',
+          getLanguageFromPath: true
+        },
+          {
+            matchPath: '/blog/:uid/',
+            languages: ['en']
+          },
+        ]
       },
+      
     },
     {
       resolve: "gatsby-transformer-remark",

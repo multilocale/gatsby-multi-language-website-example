@@ -125,7 +125,8 @@ const links = [
   },
 ]
 
-const IndexPage = () => {
+const IndexPage = props => {
+  console.log({props})
   return (
     <main style={pageStyles}>
       <h1 style={headingStyles}>
