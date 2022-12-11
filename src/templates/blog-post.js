@@ -1,5 +1,6 @@
 import * as React from "react"
 import { graphql } from "gatsby"
+import { Trans } from "gatsby-plugin-react-i18next"
 
 const BlogPost = props => {
   let { data } = props
@@ -11,6 +12,7 @@ const BlogPost = props => {
     <div>
       <div>
         <h1>{title}</h1>
+        <Trans>Author</Trans>
         <div
           dangerouslySetInnerHTML={{ __html: html }}
         />
