@@ -15,11 +15,24 @@ module.exports = {
       },
     },
     {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `content`,
+        path: `${__dirname}/content`,
+      },
+    },
+    {
       resolve: `gatsby-plugin-react-i18next`,
       options: {
         languages: ['en', 'es'],
         defaultLanguage: 'en',
       },
     },
+    {
+      resolve: "gatsby-transformer-remark",
+      options: {
+        plugins: []
+      }
+    }
   ],
 }
