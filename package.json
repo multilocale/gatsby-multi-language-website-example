@@ -1,28 +1,48 @@
 {
-  "name": "my-gatsby-site",
-  "version": "1.0.0",
+  "name": "gatsby-multi-language-website-example",
+  "version": "2.0.0",
   "private": true,
-  "description": "my-gatsby-site",
-  "author": "Giorgio Zamparelli",
-  "keywords": [
-    "gatsby"
-  ],
-  "scripts": {
-    "develop": "gatsby develop",
-    "start": "gatsby develop",
-    "build": "gatsby build",
-    "serve": "gatsby serve",
-    "clean": "gatsby clean"
+  "description": "Multi-language Gatsby website whose translations are managed on multilocale.com and synced into the repository by the multilocale CLI",
+  "license": "MIT",
+  "repository": "github:multilocale/gatsby-multi-language-website-example",
+  "homepage": "https://www.multilocale.com",
+  "author": "Multilocale",
+  "engines": {
+    "node": ">=20.0.0 <26"
   },
+  "scripts": {
+    "build": "gatsby build",
+    "clean": "gatsby clean",
+    "develop": "gatsby develop",
+    "serve": "gatsby serve",
+    "start": "gatsby develop",
+    "translations:download": "multilocale download",
+    "translations:import": "multilocale import",
+    "translations:unused": "multilocale unused",
+    "verify": "node scripts/verifyBuild.mjs"
+  },
+  "keywords": [
+    "gatsby",
+    "i18n",
+    "internationalization",
+    "localization",
+    "multi-language",
+    "multilingual",
+    "multilocale",
+    "react-i18next",
+    "hreflang"
+  ],
   "dependencies": {
-    "gatsby": "^5.2.0",
-    "gatsby-plugin-react-i18next": "^3.0.1",
-    "gatsby-plugin-sitemap": "^6.2.0",
-    "gatsby-source-filesystem": "^5.2.0",
-    "gatsby-transformer-remark": "^6.2.0",
-    "i18next": "^22.1.5",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-i18next": "^12.1.1"
+    "gatsby": "5.16.1",
+    "gatsby-plugin-sitemap": "6.16.0",
+    "gatsby-source-filesystem": "5.16.0",
+    "gatsby-transformer-remark": "6.16.0",
+    "i18next": "26.3.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-i18next": "17.0.11"
+  },
+  "devDependencies": {
+    "multilocale": "1.2.0"
   }
 }

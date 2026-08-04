@@ -1,0 +1,40 @@
+name: build
+
+# Nothing ever built this repository, which is how it sat broken for three
+# years: the last commit of 2022 added two dependencies to package.json and to
+# yarn.lock without regenerating package-lock.json, so `npm ci` failed from
+# that day on and nobody noticed. This workflow installs from the committed
+# lockfile and builds the site on every push.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        # Both ends of the range package.json declares support for.
+        node-version: [20, 24]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      # `npm ci` is the point of the job: it installs strictly from
+      # package-lock.json and fails if package.json has drifted from it.
+      - run: npm ci
+
+      - run: npm run build
+
+      # Building is not enough. A broken i18n wiring still builds — it just
+      # emits three copies of the English site.
+      - run: npm run verify

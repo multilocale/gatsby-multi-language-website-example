@@ -1,54 +1,242 @@
-<p align="center">
-  <a href="https://www.gatsbyjs.com/?utm_source=starter&utm_medium=readme&utm_campaign=minimal-starter">
-    <img alt="Gatsby" src="https://www.gatsbyjs.com/Gatsby-Monogram.svg" width="60" />
-  </a>
-</p>
-<h1 align="center">
-  Gatsby minimal starter
-</h1>
+# Gatsby multi-language website example
 
-## 🚀 Quick start
+A working [Gatsby](https://www.gatsbyjs.com) site in English, Spanish and
+French, whose interface strings are managed on
+[multilocale.com](https://www.multilocale.com) and synced into the repository
+by the [`multilocale`](https://www.npmjs.com/package/multilocale) CLI.
 
-1.  **Create a Gatsby site.**
+```bash
+git clone https://github.com/multilocale/gatsby-multi-language-website-example.git
+cd gatsby-multi-language-website-example
+npm install
+npm run develop     # http://localhost:8000
+```
 
-    Use the Gatsby CLI to create a new site, specifying the minimal starter.
+The translations are committed, so this works offline and before you have a
+Multilocale account. The account matters when you want to _change_ a string, or
+add a language — that is the workflow below.
 
-    ```shell
-    # create a new Gatsby site using the minimal starter
-    npm init gatsby
-    ```
+| URL                      | What it is                                     |
+| ------------------------ | ---------------------------------------------- |
+| `/`, `/blog/`            | English — the source language, no prefix       |
+| `/es/`, `/es/blog/`      | Spanish                                        |
+| `/fr/`, `/fr/blog/`      | French                                         |
+| `/blog/hello-world/`     | An article translated into all three languages |
+| `/blog/only-in-english/` | An article that is not translated yet          |
 
-2.  **Start developing.**
+## How it fits together
 
-    Navigate into your new site’s directory and start it up.
+```
+locales/en.json  ─┐
+locales/es.json  ─┼─► gatsby-node.js ─► pageContext ─► <I18nextProvider> ─► t('…')
+locales/fr.json  ─┘   (one page per       .locale        (gatsby-ssr.js +
+     ▲                 locale)            .translations   gatsby-browser.js)
+     │
+ multilocale download
+     │
+ multilocale.com  ← multilocale add / update / localize
+```
 
-    ```shell
-    cd my-gatsby-site/
-    npm run develop
-    ```
+Four rules hold the whole thing up:
 
-3.  **Open the code and start customizing!**
+1. **`multilocale` is a CLI, not a runtime.** It moves translation _files_
+   between multilocale.com and this repository. Nothing in the built site ever
+   calls the Multilocale API — the deployed pages are static HTML with the
+   strings baked in. The renderer is plain
+   [react-i18next](https://react.i18next.com), the standard i18n runtime of the
+   React ecosystem.
+2. **The English source string is the key.** `t('Read the blog')` looks up
+   `"Read the blog"` in the dictionary. A key with no translation renders the
+   English original, so a half-translated locale degrades into English rather
+   than into `blog.cta.read`.
+3. **One prerendered page per locale.** `gatsby-node.js` deletes each page
+   Gatsby creates and re-creates it once per language, with that language's
+   dictionary on `pageContext`. `/es/` is a real file on disk with a real URL,
+   which is the only thing search engines can index.
+4. **Interface strings are phrases; articles are not.** The navigation, the
+   byline and the buttons live on multilocale.com. The blog posts are markdown
+   files under `content/blog/<language>/`, tied to their translations by
+   `translationKey` in the frontmatter.
 
-    Your site is now running at http://localhost:8000!
+## The end-to-end workflow
 
-    Edit `src/pages/index.js` to see your site update in real-time!
+### 1. Create an account and a project
 
-4.  **Learn more**
+```bash
+npx multilocale signup --email you@example.com --json   # or: npx multilocale login
+```
 
-    - [Documentation](https://www.gatsbyjs.com/docs/?utm_source=starter&utm_medium=readme&utm_campaign=minimal-starter)
+`signup` prints a generated password exactly once and stores the session in
+`~/.multilocale/`. It also creates a nameless bootstrap project that is missing
+`locales`, `defaultLocale` and `paths` — **do not use it**. Create a real
+project instead:
 
-    - [Tutorials](https://www.gatsbyjs.com/tutorial/?utm_source=starter&utm_medium=readme&utm_campaign=minimal-starter)
+```bash
+npx multilocale projects create "my-gatsby-site" \
+  --locales en,es,fr --default-locale en
+```
 
-    - [Guides](https://www.gatsbyjs.com/tutorial/?utm_source=starter&utm_medium=readme&utm_campaign=minimal-starter)
+Copy the printed id into `multilocale.json`, replacing the two placeholders:
 
-    - [API Reference](https://www.gatsbyjs.com/docs/api-reference/?utm_source=starter&utm_medium=readme&utm_campaign=minimal-starter)
+```json
+{
+  "organizationId": "…",
+  "projectId": "…",
+  "format": "json",
+  "extension": "json",
+  "paths": ["locales/%lang%.json"]
+}
+```
 
-    - [Plugin Library](https://www.gatsbyjs.com/plugins?utm_source=starter&utm_medium=readme&utm_campaign=minimal-starter)
+That file is what lets every later command run with no flags. Without it the
+CLI stops to ask which project you meant, which hangs CI and agents.
 
-    - [Cheat Sheet](https://www.gatsbyjs.com/docs/cheat-sheet/?utm_source=starter&utm_medium=readme&utm_campaign=minimal-starter)
+### 2. Upload the strings that already exist
 
-## 🚀 Quick start (Gatsby Cloud)
+```bash
+npx multilocale import
+```
 
-Deploy this starter with one click on [Gatsby Cloud](https://www.gatsbyjs.com/cloud/):
+`import` reads the files matching `paths`, uploads them as phrases, and
+machine-translates anything missing from a configured locale. Run it **once**
+per codebase: a second run creates duplicate rows instead of merging.
 
-[<img src="https://www.gatsbyjs.com/deploynow.svg" alt="Deploy to Gatsby Cloud">](https://www.gatsbyjs.com/dashboard/deploynow?url=https://github.com/gatsbyjs/gatsby-starter-minimal)
+### 3. Edit translations
+
+On [app.multilocale.com](https://app.multilocale.com), or from the terminal:
+
+```bash
+npx multilocale add "Save changes"                 # new phrase, translated to every locale
+npx multilocale update "Save changes" "Guardar" -l es
+npx multilocale phrases list -l fr                 # what French looks like now
+npx multilocale duplicates                         # keys with identical English values
+npx multilocale unused                             # keys no source file references
+```
+
+`add` machine-translates. For short or ambiguous strings, tell the model what
+the word means here — an isolated two-word string routinely comes back in the
+wrong sense:
+
+```bash
+npx multilocale add "Book" \
+  --context "Verb, on a button: to reserve an appointment. Not the noun."
+```
+
+### 4. Pull the files back
+
+```bash
+npx multilocale download
+```
+
+This rewrites `locales/en.json`, `locales/es.json` and `locales/fr.json` from
+the phrases stored on multilocale.com. Restart `gatsby develop` afterwards:
+`gatsby-node.js` reads the dictionaries once at bootstrap, so a dictionary
+change is not hot-reloaded.
+
+### 5. Add a language
+
+```bash
+npx multilocale localize de       # add German, translate every phrase into it
+npx multilocale download          # writes locales/de.json
+```
+
+Then add it to `site.config.js`:
+
+```js
+const locales = ['en', 'es', 'fr', 'de']
+const localeNames = {
+  en: 'English',
+  es: 'Español',
+  fr: 'Français',
+  de: 'Deutsch',
+}
+```
+
+That is the whole change — no component, route or page touched. `npm run build`
+now emits `/de/`, `/de/blog/`, `/de/404/`, adds German to every hreflang set,
+and adds the German URLs to `sitemap-0.xml`.
+
+## What the build produces
+
+```bash
+npm run build
+npm run verify      # asserts the site really is multi-language
+npm run serve       # http://localhost:9000
+```
+
+`npm run verify` is not decoration. A broken i18n wiring still _builds_ — it
+just emits three copies of the English site. The script fails if a locale's
+page renders the source language, if `<html lang>` is wrong, if the hreflang
+set stops being reciprocal, or if a page advertises a translation that was
+never generated.
+
+Each generated page carries:
+
+```text
+<html lang="es">
+<title>Publica tu sitio Gatsby en todos los idiomas</title>
+<link rel="canonical"  href="https://gatsby.multilocale.com/es/">
+<link rel="alternate" hreflang="en"        href="https://gatsby.multilocale.com/">
+<link rel="alternate" hreflang="es"        href="https://gatsby.multilocale.com/es/">
+<link rel="alternate" hreflang="fr"        href="https://gatsby.multilocale.com/fr/">
+<link rel="alternate" hreflang="x-default" href="https://gatsby.multilocale.com/">
+```
+
+Change `siteUrl` in `site.config.js` before deploying — it is what those
+absolute URLs and the sitemap are built from.
+
+## Files worth reading
+
+| File                           | Why                                                           |
+| ------------------------------ | ------------------------------------------------------------- |
+| `site.config.js`               | The languages, their display names, and the site URL          |
+| `multilocale.json`             | Which Multilocale project, and where the dictionaries go      |
+| `gatsby-node.js`               | One page per locale; blog alternates from `translationKey`    |
+| `src/i18n/getI18n.js`          | The i18next instance, and why the separators are switched off |
+| `src/i18n/wrapPageElement.jsx` | The provider, exported from ssr _and_ browser                 |
+| `src/components/Seo.jsx`       | canonical + reciprocal hreflang + x-default                   |
+| `gatsby-ssr.js`                | `<html lang>`, the one tag the Head API cannot set            |
+| `scripts/verifyBuild.mjs`      | The regression guard CI runs                                  |
+
+## Things that will bite you
+
+- **i18next separators must be off.** The keys are English sentences
+  containing `.` and `:`, which i18next otherwise reads as nested-key and
+  namespace separators. `src/i18n/getI18n.js` sets `keySeparator: false` and
+  `nsSeparator: false`; remove either and half the strings render blank.
+- **`multilocale download` writes a `"locale"` key** into every file it
+  generates. It is metadata, not a phrase — `gatsby-node.js` strips it before
+  the dictionary reaches the browser.
+- **`download` prefers the project's `paths` over `multilocale.json`.** If the
+  files land somewhere unexpected, check the project on app.multilocale.com,
+  not this repository.
+- **`import` accepts flat JSON only.** Nested or namespaced keys are stored as
+  objects and then machine-translated into garbage, spending credits.
+- **`import` and `unused` need `paths` set**, on the project or in
+  `multilocale.json`. Without it they throw
+  `Cannot read properties of undefined (reading 'forEach')`.
+- **Do not install any `@multilocale/*` npm package.** The 2023-era
+  `@multilocale/multilocale-react` and `@multilocale/multilocale-js-client` are
+  unmaintained and `@multilocale/react` is 404. The maintained package is
+  `multilocale`, and it is the CLI.
+- **Gatsby's `Head` export renders in its own React root**, outside the
+  provider — `useTranslation()` throws there. Page titles are translated with
+  `src/i18n/translate.js`, a direct dictionary lookup.
+- **Gatsby still defaults to the classic JSX runtime.** `gatsby-config.js` sets
+  `jsxRuntime: 'automatic'`; without it every `.jsx` file needs
+  `import React from 'react'`, and the build fails only at "Building static
+  HTML" with `ReferenceError: React is not defined`.
+
+## Stack
+
+Gatsby 5 · React 19 · i18next 26 · react-i18next 17 · Node 20–25.
+
+There is deliberately no `gatsby-plugin-react-i18next`: its last release was
+December 2022 and it still pins `react@^18`, `i18next@^22` and
+`react-i18next@^12`, which is what froze the previous version of this example
+on a 2022 stack. Everything it provided is about sixty lines of `gatsby-node.js`
+and `gatsby-ssr.js` here, written against Gatsby's own public APIs.
+
+## License
+
+[MIT](LICENSE)
