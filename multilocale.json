@@ -1,6 +1,6 @@
 {
-  "organizationId": "REPLACE_WITH_YOUR_ORGANIZATION_ID",
-  "projectId": "REPLACE_WITH_YOUR_PROJECT_ID",
+  "organizationId": "e395dba6a14d8af4c2d35890",
+  "projectId": "33797c7626fb7cafb5b20de0",
   "format": "json",
   "extension": "json",
   "paths": ["locales/%lang%.json"]

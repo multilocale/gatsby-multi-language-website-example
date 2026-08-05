@@ -73,20 +73,30 @@ project instead:
 
 ```bash
 npx multilocale projects create "my-gatsby-site" \
-  --locales en,es,fr --default-locale en
+  --locales en,es,fr --default-locale en \
+  --paths "locales/%lang%.json"
 ```
 
-Copy the printed id into `multilocale.json`, replacing the two placeholders:
+`--paths` matters: `import` and `unused` read it off the **project**, not off
+`multilocale.json`. If you forget it, `multilocale projects update
+"my-gatsby-site" --paths "locales/%lang%.json"` sets it afterwards.
+
+Copy the printed ids into `multilocale.json`:
 
 ```json
 {
-  "organizationId": "…",
-  "projectId": "…",
+  "organizationId": "<your organization id>",
+  "projectId": "<the id it printed>",
   "format": "json",
   "extension": "json",
   "paths": ["locales/%lang%.json"]
 }
 ```
+
+The ids committed here are Multilocale's own `multilocale-gatsby-example`
+project — the one the committed dictionaries were downloaded from. Replace
+them with yours; a project in someone else's organization answers every
+command with 404.
 
 That file is what lets every later command run with no flags. Without it the
 CLI stops to ask which project you meant, which hangs CI and agents.
@@ -100,6 +110,18 @@ npx multilocale import
 `import` reads the files matching `paths`, uploads them as phrases, and
 machine-translates anything missing from a configured locale. Run it **once**
 per codebase: a second run creates duplicate rows instead of merging.
+
+> **Use `multilocale` 1.3.1 or newer — never 1.3.0.** 1.3.0 escaped every
+> literal `.` in a key, so `"Page not found."` was stored as
+> `"Page not found\."`, and this example's keys are English sentences: six of
+> the twenty-three end in a full stop. Nothing unescaped them on the way back,
+> so `download` wrote the backslashed key and every affected string silently
+> fell back to English. **1.3.1 fixes it** by escaping only dictionaries that
+> actually nest, so a flat catalogue like this one passes through untouched.
+> `package-lock.json` here pins 1.3.1 and `npm ci` installs exactly that.
+> The check costs nothing either way — run
+> `npx multilocale phrases list --json | grep -F '\\'` after an `import`; it
+> must print nothing.
 
 ### 3. Edit translations
 
@@ -210,8 +232,15 @@ absolute URLs and the sitemap are built from.
 - **`download` prefers the project's `paths` over `multilocale.json`.** If the
   files land somewhere unexpected, check the project on app.multilocale.com,
   not this repository.
-- **`import` accepts flat JSON only.** Nested or namespaced keys are stored as
-  objects and then machine-translated into garbage, spending credits.
+- **`import` escaped literal dots in keys on 1.3.0 — fixed in 1.3.1, which is
+  the minimum version here.** On 1.3.0 a key containing `.` was uploaded as
+  `\.`, nothing unescaped it, and `download` wrote the mangled key back, so the
+  string fell back to English in every locale. Six of this example's
+  twenty-three keys were affected. 1.3.1 escapes only when the dictionary
+  actually nests. See step 2 above.
+- **`import` wants flat JSON.** 1.3.0 and newer flatten a nested dictionary
+  into dot paths; 1.2.x stored the object verbatim and machine-translated it
+  into garbage, spending credits.
 - **`import` and `unused` need `paths` set**, on the project or in
   `multilocale.json`. Without it they throw
   `Cannot read properties of undefined (reading 'forEach')`.

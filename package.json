@@ -43,6 +43,6 @@
     "react-i18next": "17.0.11"
   },
   "devDependencies": {
-    "multilocale": "1.2.0"
+    "multilocale": "^1.3.1"
   }
 }
