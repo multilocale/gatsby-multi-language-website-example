@@ -6,7 +6,7 @@ import getI18n from './getI18n.js'
 
 // Wraps every page — server-rendered at build time and client-navigated
 // afterwards — in the i18next instance for that page's locale. `locale` and
-// `translations` were put on pageContext by gatsby-node.js when it generated
+// `translations` were put on pageContext by gatsby-node.mjs when it generated
 // the page, so the provider needs no data fetching and no effect.
 //
 // Exported from BOTH gatsby-ssr.js and gatsby-browser.js. Exporting it from

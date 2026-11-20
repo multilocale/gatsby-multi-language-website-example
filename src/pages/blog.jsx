@@ -50,7 +50,7 @@ export const Head = ({ pageContext }) => (
   />
 )
 
-// `$locale` comes from the pageContext gatsby-node.js set, so the same
+// `$locale` comes from the pageContext gatsby-node.mjs set, so the same
 // component renders a different post list per language with no filtering in
 // React. The `locale` argument on `date` is what makes Gatsby format
 // "15 janvier 2026" rather than "January 15, 2026" on the French page.

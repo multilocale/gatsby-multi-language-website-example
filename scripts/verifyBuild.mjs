@@ -21,14 +21,9 @@
 // that prose into a false positive.
 
 import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 
-const PUBLIC_DIRECTORY = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '..',
-  'public',
-)
+const PUBLIC_DIRECTORY = join(import.meta.dirname, '..', 'public')
 
 // One string per locale that can only be present if the dictionary was applied.
 const LOCALES = [

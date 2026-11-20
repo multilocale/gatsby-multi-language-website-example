@@ -1,7 +1,6 @@
 /* Copyright 2013 - 2026 Waiterio LLC */
 
 import './src/styles/global.css'
-
 import localeFromPathname from './src/i18n/localeFromPathname.js'
 
 // The same wrapper the static build used. Client-side navigation between

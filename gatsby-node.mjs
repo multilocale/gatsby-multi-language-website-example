@@ -1,12 +1,17 @@
 /* Copyright 2013 - 2026 Waiterio LLC */
 
-const fs = require('node:fs')
-const path = require('node:path')
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const { defaultLocale, locales } = require('./site.config.js')
+import markGatsbyCacheCommonjs from './scripts/markGatsbyCacheCommonjs.mjs'
+import siteConfig from './site.config.js'
+
+const { defaultLocale, locales } = siteConfig
+const directory = path.dirname(fileURLToPath(import.meta.url))
 
 const BLOG_POST_TEMPLATE = path.resolve(
-  __dirname,
+  directory,
   'src/templates/blog-post.jsx',
 )
 
@@ -19,7 +24,7 @@ const BLOG_POST_TEMPLATE = path.resolve(
 // shipped to the browser as a translatable string.
 function loadTranslations() {
   return locales.reduce((translations, locale) => {
-    const file = path.join(__dirname, 'locales', `${locale}.json`)
+    const file = path.join(directory, 'locales', `${locale}.json`)
     const { locale: metadata, ...phrases } = JSON.parse(
       fs.readFileSync(file, 'utf8'),
     )
@@ -46,9 +51,16 @@ function localizedPath(locale, pathname) {
   return locale === defaultLocale ? pathname : `/${locale}${pathname}`
 }
 
+// `.cache/` holds Gatsby's CommonJS output, and Gatsby clears it when its
+// plugins or config change, so it is marked CommonJS again on every bootstrap
+// (scripts/markGatsbyCacheCommonjs.mjs explains why).
+export const onPreBootstrap = ({ store }) => {
+  markGatsbyCacheCommonjs(store.getState().program.directory)
+}
+
 // Every page under src/pages/ is created once by Gatsby and then replaced here
 // with one copy per locale.
-exports.onCreatePage = ({ page, actions }) => {
+export const onCreatePage = ({ page, actions }) => {
   const { createPage, deletePage } = actions
 
   // createPage() below re-enters this hook. The locale we just set on the
@@ -81,7 +93,7 @@ exports.onCreatePage = ({ page, actions }) => {
   })
 }
 
-exports.createPages = async ({ actions, graphql, reporter }) => {
+export const createPages = async ({ actions, graphql, reporter }) => {
   const { createPage } = actions
 
   const result = await graphql(`

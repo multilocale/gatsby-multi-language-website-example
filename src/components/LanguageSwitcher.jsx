@@ -8,7 +8,7 @@ import siteConfig from '../../site.config.js'
 const { localeNames, locales } = siteConfig
 
 // Links to this exact page in every other language, taken from the
-// `alternates` map gatsby-node.js computed when it generated the page.
+// `alternates` map gatsby-node.mjs computed when it generated the page.
 //
 // It links to concrete URLs instead of switching a language cookie, and it
 // omits languages the page does not exist in (an untranslated blog post has
@@ -32,7 +32,7 @@ const LanguageSwitcher = ({ alternates }) => {
               </li>
             ) : (
               <li key={locale}>
-                <Link to={alternates[locale]} hreflang={locale} lang={locale}>
+                <Link to={alternates[locale]} hrefLang={locale} lang={locale}>
                   {localeNames[locale]}
                 </Link>
               </li>

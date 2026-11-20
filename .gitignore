@@ -4,16 +4,16 @@ public/
 
 node_modules/
 
-# This example ships package-lock.json and is installed with npm — see
-# AGENTS.md for why. A pnpm-lock.yaml only ever appears here as a byproduct of
-# the private local-override flow, and must not be committed: two lockfiles in
-# one repository is exactly how this example broke the first time.
+# This example ships package-lock.json and is installed with npm. A
+# pnpm-lock.yaml only ever appears here as a byproduct of the private
+# local-override flow, and must not be committed: two lockfiles in one
+# repository is exactly how this example broke the first time.
 pnpm-lock.yaml
 yarn.lock
 
 # The local override that repoints the `multilocale` dependency at a checkout
 # of the CLI instead of the published npm package. Never committed, never
-# published — see AGENTS.md.
+# published.
 pnpm-workspace.yaml
 
 .DS_Store

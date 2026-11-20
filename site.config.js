@@ -1,7 +1,7 @@
 /* Copyright 2013 - 2026 Waiterio LLC */
 
-// The one place the site's languages are declared. gatsby-config.js reads the
-// site URL from here, gatsby-node.js reads the locale list to decide which
+// The one place the site's languages are declared. gatsby-config.mjs reads the
+// site URL from here, gatsby-node.mjs reads the locale list to decide which
 // pages to generate, and the React components read it to build the language
 // switcher and the hreflang tags.
 //
@@ -10,9 +10,9 @@
 // `multilocale download` so locales/<code>.json exists on disk, then add the
 // code to `locales` and a display name to `localeNames` below.
 //
-// Plain CommonJS with no `require` of anything: this file is loaded both by
-// Gatsby's Node processes and by the browser bundle, so it must stay free of
-// `node:fs`, `node:path` and every other Node built-in.
+// An ES module that imports nothing: this file is loaded both by Gatsby's Node
+// processes and by the browser bundle, so it must stay free of `node:fs`,
+// `node:path` and every other Node built-in.
 
 // Change this to your own domain. It is what ends up in sitemap.xml, in the
 // canonical URL of every page, and in every hreflang tag — all three are
@@ -35,4 +35,6 @@ const localeNames = {
   fr: 'Français',
 }
 
-module.exports = { defaultLocale, localeNames, locales, siteUrl }
+const siteConfig = { defaultLocale, localeNames, locales, siteUrl }
+
+export default siteConfig

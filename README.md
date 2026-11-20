@@ -28,9 +28,9 @@ add a language — that is the workflow below.
 
 ```
 locales/en.json  ─┐
-locales/es.json  ─┼─► gatsby-node.js ─► pageContext ─► <I18nextProvider> ─► t('…')
-locales/fr.json  ─┘   (one page per       .locale        (gatsby-ssr.js +
-     ▲                 locale)            .translations   gatsby-browser.js)
+locales/es.json  ─┼─► gatsby-node.mjs ─► pageContext ─► <I18nextProvider> ─► t('…')
+locales/fr.json  ─┘   (one page per        .locale        (gatsby-ssr.js +
+     ▲                 locale)             .translations   gatsby-browser.js)
      │
  multilocale download
      │
@@ -49,7 +49,7 @@ Four rules hold the whole thing up:
    `"Read the blog"` in the dictionary. A key with no translation renders the
    English original, so a half-translated locale degrades into English rather
    than into `blog.cta.read`.
-3. **One prerendered page per locale.** `gatsby-node.js` deletes each page
+3. **One prerendered page per locale.** `gatsby-node.mjs` deletes each page
    Gatsby creates and re-creates it once per language, with that language's
    dictionary on `pageContext`. `/es/` is a real file on disk with a real URL,
    which is the only thing search engines can index.
@@ -151,8 +151,8 @@ npx multilocale download
 ```
 
 This rewrites `locales/en.json`, `locales/es.json` and `locales/fr.json` from
-the phrases stored on multilocale.com. Restart `gatsby develop` afterwards:
-`gatsby-node.js` reads the dictionaries once at bootstrap, so a dictionary
+the phrases stored on multilocale.com. Restart `npm run develop` afterwards:
+`gatsby-node.mjs` reads the dictionaries once at bootstrap, so a dictionary
 change is not hot-reloaded.
 
 ### 5. Add a language
@@ -209,16 +209,17 @@ absolute URLs and the sitemap are built from.
 
 ## Files worth reading
 
-| File                           | Why                                                           |
-| ------------------------------ | ------------------------------------------------------------- |
-| `site.config.js`               | The languages, their display names, and the site URL          |
-| `multilocale.json`             | Which Multilocale project, and where the dictionaries go      |
-| `gatsby-node.js`               | One page per locale; blog alternates from `translationKey`    |
-| `src/i18n/getI18n.js`          | The i18next instance, and why the separators are switched off |
-| `src/i18n/wrapPageElement.jsx` | The provider, exported from ssr _and_ browser                 |
-| `src/components/Seo.jsx`       | canonical + reciprocal hreflang + x-default                   |
-| `gatsby-ssr.js`                | `<html lang>`, the one tag the Head API cannot set            |
-| `scripts/verifyBuild.mjs`      | The regression guard CI runs                                  |
+| File                                  | Why                                                            |
+| ------------------------------------- | -------------------------------------------------------------- |
+| `site.config.js`                      | The languages, their display names, and the site URL           |
+| `multilocale.json`                    | Which Multilocale project, and where the dictionaries go       |
+| `gatsby-node.mjs`                     | One page per locale; blog alternates from `translationKey`     |
+| `src/i18n/getI18n.js`                 | The i18next instance, and why the separators are switched off  |
+| `src/i18n/wrapPageElement.jsx`        | The provider, exported from ssr _and_ browser                  |
+| `src/components/Seo.jsx`              | canonical + reciprocal hreflang + x-default                    |
+| `gatsby-ssr.js`                       | `<html lang>`, the one tag the Head API cannot set             |
+| `scripts/verifyBuild.mjs`             | The regression guard CI runs                                   |
+| `scripts/markGatsbyCacheCommonjs.mjs` | Why Gatsby's `.cache/` is marked CommonJS in an ES module site |
 
 ## Things that will bite you
 
@@ -227,7 +228,7 @@ absolute URLs and the sitemap are built from.
   namespace separators. `src/i18n/getI18n.js` sets `keySeparator: false` and
   `nsSeparator: false`; remove either and half the strings render blank.
 - **`multilocale download` writes a `"locale"` key** into every file it
-  generates. It is metadata, not a phrase — `gatsby-node.js` strips it before
+  generates. It is metadata, not a phrase — `gatsby-node.mjs` strips it before
   the dictionary reaches the browser.
 - **`download` prefers the project's `paths` over `multilocale.json`.** If the
   files land somewhere unexpected, check the project on app.multilocale.com,
@@ -251,10 +252,21 @@ absolute URLs and the sitemap are built from.
 - **Gatsby's `Head` export renders in its own React root**, outside the
   provider — `useTranslation()` throws there. Page titles are translated with
   `src/i18n/translate.js`, a direct dictionary lookup.
-- **Gatsby still defaults to the classic JSX runtime.** `gatsby-config.js` sets
+- **Gatsby still defaults to the classic JSX runtime.** `gatsby-config.mjs` sets
   `jsxRuntime: 'automatic'`; without it every `.jsx` file needs
   `import React from 'react'`, and the build fails only at "Building static
   HTML" with `ReferenceError: React is not defined`.
+- **This site is an ES module package; Gatsby 5's own output is CommonJS.**
+  Gatsby writes the launcher of `gatsby develop`, its server renderer and its
+  query engine into `.cache/` as CommonJS `.js` files, which Node would read
+  as ES modules here. `scripts/markGatsbyCacheCommonjs.mjs` marks `.cache/`
+  as CommonJS: `npm run develop` and `npm start` run it first, and
+  `gatsby-node.mjs` runs it on every bootstrap. So start the site with
+  `npm run develop`: a bare `gatsby develop` on a fresh clone stops with
+  `require is not defined in ES module scope`.
+- **Gatsby does not watch `gatsby-node.mjs` for cache invalidation.** It clears
+  `.cache/` when `gatsby-config.js` or `gatsby-node.js` changes, but not their
+  `.mjs` forms, so run `npm run clean` after editing `gatsby-node.mjs`.
 
 ## Stack
 
@@ -263,8 +275,9 @@ Gatsby 5 · React 19 · i18next 26 · react-i18next 17 · Node 20–25.
 There is deliberately no `gatsby-plugin-react-i18next`: its last release was
 December 2022 and it still pins `react@^18`, `i18next@^22` and
 `react-i18next@^12`, which is what froze the previous version of this example
-on a 2022 stack. Everything it provided is about sixty lines of `gatsby-node.js`
-and `gatsby-ssr.js` here, written against Gatsby's own public APIs.
+on a 2022 stack. Everything it provided is about sixty lines of
+`gatsby-node.mjs` and `gatsby-ssr.js` here, written against Gatsby's own
+public APIs.
 
 ## License
 

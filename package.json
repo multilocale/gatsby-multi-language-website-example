@@ -1,5 +1,6 @@
 {
   "name": "gatsby-multi-language-website-example",
+  "type": "module",
   "version": "2.0.0",
   "private": true,
   "description": "Multi-language Gatsby website whose translations are managed on multilocale.com and synced into the repository by the multilocale CLI",
@@ -13,9 +14,9 @@
   "scripts": {
     "build": "gatsby build",
     "clean": "gatsby clean",
-    "develop": "gatsby develop",
+    "develop": "node scripts/markGatsbyCacheCommonjs.mjs && gatsby develop",
     "serve": "gatsby serve",
-    "start": "gatsby develop",
+    "start": "node scripts/markGatsbyCacheCommonjs.mjs && gatsby develop",
     "translations:download": "multilocale download",
     "translations:import": "multilocale import",
     "translations:unused": "multilocale unused",

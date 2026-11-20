@@ -26,14 +26,14 @@ const Seo = ({ alternates, description, locale, title }) => (
       <link
         key={alternateLocale}
         rel="alternate"
-        hreflang={alternateLocale}
+        hrefLang={alternateLocale}
         href={`${siteUrl}${alternatePath}`}
       />
     ))}
     {alternates[defaultLocale] ? (
       <link
         rel="alternate"
-        hreflang="x-default"
+        hrefLang="x-default"
         href={`${siteUrl}${alternates[defaultLocale]}`}
       />
     ) : null}
